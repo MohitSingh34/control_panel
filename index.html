@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Mohit's Command — Responsive</title>
 
-    <!-- xterm + socket.io kept as in your original file -->
     <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
     <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
 
     <style>
         /* --------------------
@@ -17,24 +17,18 @@
        -------------------- */
         :root {
             --bg: #030312;
-            /* page background */
             --panel: rgba(8, 10, 12, 0.85);
             --glass: rgba(255, 255, 255, 0.03);
             --primary: #4f46e5;
-            /* indigo-600 */
             --accent: #ec4899;
-            /* pink-500 */
             --muted: #94a3b8;
             --success: #10b981;
             --danger: #ef4444;
             --text: #e6eef8;
             --card-border: rgba(255, 255, 255, 0.04);
-
-            /* responsive typography */
             --h1: clamp(18px, 3vw, 28px);
             --h2: clamp(16px, 2.4vw, 22px);
             --body: clamp(14px, 2vw, 16px);
-
             --radius: 12px;
             --gap: 12px;
         }
@@ -54,14 +48,12 @@
             background: linear-gradient(180deg, var(--bg) 0%, #05060a 100%);
             color: var(--text);
             -webkit-font-smoothing: antialiased;
-            font-family: Inter, 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+            font-family: Inter, 'Segoe UI', system-ui, -apple-system, sans-serif;
             padding: 18px;
-            /* mobile comfortable padding */
             line-height: 1.35;
             font-size: var(--body);
         }
 
-        /* Layout container: centered & constrained on wide screens */
         .wrap {
             width: 100%;
             max-width: 1180px;
@@ -93,7 +85,6 @@
             color: var(--muted)
         }
 
-        /* Panels: subtle glass + border + shadow */
         .panel {
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
             border-radius: var(--radius);
@@ -134,7 +125,6 @@
             border-color: rgba(79, 70, 229, 0.35)
         }
 
-        /* Buttons: large tap targets (>=44px) */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -143,7 +133,9 @@
             border-radius: 10px;
             border: none;
             cursor: pointer;
-            font-weight: 600
+            font-weight: 600;
+            color: white;
+            background: #334155;
         }
 
         .btn.primary {
@@ -172,7 +164,6 @@
             flex: 1
         }
 
-        /* Display area (image / video) */
         #display-area {
             display: none;
             margin-top: 10px;
@@ -191,13 +182,15 @@
             border: 1px solid var(--card-border)
         }
 
-        /* Terminal section: make it flexible */
+        /* Terminal Area Base Styling */
         .terminal-wrapper {
             margin-top: 14px;
             border-radius: 12px;
             overflow: hidden;
             border: 1px solid var(--card-border);
-            background: linear-gradient(180deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.45));
+            background: linear-gradient(180deg, #09090b, #000000);
+            display: flex;
+            flex-direction: column;
         }
 
         .term-top {
@@ -205,14 +198,23 @@
             align-items: center;
             justify-content: space-between;
             padding: 10px 12px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03)
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .term-main-content {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            overflow: hidden;
         }
 
         .tab-bar {
             display: flex;
             gap: 8px;
             overflow: auto;
-            padding: 10px
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
         }
 
         .tab {
@@ -222,64 +224,129 @@
             color: var(--muted);
             font-weight: 600;
             flex-shrink: 0;
-            border: 1px solid transparent
+            border: 1px solid transparent;
+            cursor: pointer;
         }
 
         .tab.active {
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.05);
             color: var(--primary);
-            border-color: rgba(255, 255, 255, 0.03)
+            border-color: rgba(255, 255, 255, 0.05)
+        }
+
+        #terminals-area {
+            background: #000;
+            padding: 10px;
+            flex-grow: 1;
+            overflow: hidden;
+            position: relative;
         }
 
         .xterm-container {
             display: none;
-            padding: 10px;
-            background: #000
+            width: 100%;
+            height: 100%;
         }
 
         .xterm-container.active {
-            display: block
+            display: block;
         }
 
-        /* Virtual keyboard compact on desktop, scrollable on mobile */
+        /* Virtual Keyboard */
         .virtual-kb {
             display: flex;
             gap: 8px;
             padding: 10px;
-            overflow: auto
+            overflow-x: auto;
+            background: rgba(15, 23, 36, 0.9);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            align-items: center;
         }
 
         .vk-key {
             flex-shrink: 0;
-            padding: 8px 12px;
+            padding: 10px 14px;
             border-radius: 8px;
-            background: #0f1724;
-            border: 1px solid rgba(255, 255, 255, 0.02);
-            min-width: 44px;
-            text-align: center
+            color: white;
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            min-width: 48px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 13px;
         }
 
         .vk-key.toggled {
             background: var(--danger)
         }
 
-        /* Login centered card */
+        .vk-key:active {
+            background: #334155;
+            transform: scale(0.95);
+        }
+
+        /* -------------------------------------------
+           FULLSCREEN & LANDSCAPE MAGIC RESPONSIVENESS
+           ------------------------------------------- */
+
+        /* Jab terminal fullscreen mode me ho */
+        .terminal-wrapper.fullscreen-active {
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 99999;
+            border-radius: 0;
+            background: #000;
+        }
+
+        /* Landscape Mode me VK right side par! */
+        @media (orientation: landscape) {
+            .terminal-wrapper.fullscreen-active {
+                flex-direction: row;
+                /* Sidha horizontal layout */
+            }
+
+            .terminal-wrapper.fullscreen-active .term-main-content {
+                flex-grow: 1;
+                height: 100vh;
+            }
+
+            .terminal-wrapper.fullscreen-active .virtual-kb {
+                flex-direction: column;
+                /* Buttons vertically aayenge */
+                width: 80px;
+                height: 100vh;
+                overflow-y: auto;
+                overflow-x: hidden;
+                border-top: none;
+                border-left: 1px solid rgba(255, 255, 255, 0.05);
+                padding: 10px 5px;
+            }
+
+            .terminal-wrapper.fullscreen-active .vk-label {
+                display: none;
+            }
+
+            .terminal-wrapper.fullscreen-active .vk-key {
+                width: 100%;
+                padding: 14px 0;
+            }
+        }
+
         #login-section {
             max-width: 420px;
             margin: 12vh auto
         }
 
-        /* ---- Wide screen layout ---- */
         @media (min-width:900px) {
             body {
                 padding: 28px
             }
 
-            header.appbar {
-                margin-bottom: 20px
-            }
-
-            /* two-column layout: left controls, right terminal */
             .two-col {
                 display: grid;
                 grid-template-columns: 420px 1fr;
@@ -287,11 +354,6 @@
                 align-items: start
             }
 
-            .controls {
-                grid-template-columns: 1fr
-            }
-
-            /* terminal gets larger height on desktop */
             .xterm-container {
                 min-height: 480px
             }
@@ -301,7 +363,6 @@
             }
         }
 
-        /* ---- Small tweaks for very small phones ---- */
         @media (max-width:360px) {
             .brand h1 {
                 font-size: 16px
@@ -310,14 +371,6 @@
             .row {
                 flex-direction: column
             }
-        }
-
-        /* Accessibility focus */
-        button:focus,
-        a:focus,
-        input:focus {
-            outline: 3px solid rgba(79, 70, 229, 0.14);
-            outline-offset: 2px
         }
     </style>
 </head>
@@ -332,7 +385,7 @@
                     M</div>
                 <div>
                     <h1>Mohit's Command</h1>
-                    <p>Responsive remote terminal — mobile + laptop</p>
+                    <p>Responsive remote terminal</p>
                 </div>
             </div>
             <div style="display:flex;align-items:center;gap:10px">
@@ -340,7 +393,6 @@
             </div>
         </header>
 
-        <!-- LOGIN -->
         <div id="login-section" class="panel">
             <h2 style="margin-bottom:10px;color:var(--primary)">🔒 Access Terminal</h2>
             <div class="controls">
@@ -350,11 +402,9 @@
             </div>
         </div>
 
-        <!-- DASHBOARD -->
         <div id="dashboard" style="display:none">
 
             <div class="two-col">
-                <!-- LEFT CONTROLS -->
                 <div class="panel">
                     <h3 style="color:var(--primary);margin-bottom:10px">👀 Vision & Recording</h3>
 
@@ -399,31 +449,39 @@
                     </div>
 
                     <div id="display-area"></div>
-
                 </div>
 
-                <!-- RIGHT: Terminal -->
-                <div class="terminal-wrapper panel">
-                    <div class="term-top">
-                        <div>
-                            <strong style="color:var(--muted)">💻 Xubuntu Shell</strong>
-                            <div style="font-size:12px;color:var(--muted)">Multiple tabs • touch-friendly</div>
-                        </div>
-                        <div style="display:flex;gap:8px;align-items:center">
-                            <button class="btn" onclick="createNewTab()">➕ New Tab</button>
-                        </div>
-                    </div>
+                <div class="terminal-wrapper panel" id="terminalWrapper">
 
-                    <div class="tab-bar panel" id="tabBar" aria-label="tab bar">
-                        <!-- tabs injected here -->
-                    </div>
+                    <div class="term-main-content">
+                        <div class="term-top">
+                            <div>
+                                <strong style="color:var(--muted)">💻 Xubuntu Shell</strong>
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:center">
+                                <button class="btn" onclick="toggleFullScreen()"
+                                    style="padding:6px 10px; font-size:12px;">⛶ Fullscreen</button>
+                                <button class="btn primary" onclick="createNewTab()"
+                                    style="padding:6px 10px; font-size:12px;">➕ New Tab</button>
+                            </div>
+                        </div>
 
-                    <div id="terminals-area" style="background:#000;padding:10px">
-                        <!-- terminal containers injected here -->
+                        <div class="tab-bar panel" id="tabBar" aria-label="tab bar"
+                            style="border-radius:0; border-left:none; border-right:none;">
+                        </div>
+
+                        <div id="terminals-area">
+                        </div>
                     </div>
 
                     <div class="virtual-kb" aria-hidden="false">
-                        <div style="font-size:12px;color:var(--muted);min-width:44px">VK:</div>
+                        <div class="vk-label" style="font-size:12px;color:var(--muted);min-width:30px">VK:</div>
+
+                        <button class="vk-key" onclick="sendDirectKey('\x1b[D')">←</button>
+                        <button class="vk-key" onclick="sendDirectKey('\x1b[B')">↓</button>
+                        <button class="vk-key" onclick="sendDirectKey('\x1b[A')">↑</button>
+                        <button class="vk-key" onclick="sendDirectKey('\x1b[C')">→</button>
+
                         <button class="vk-key" id="vk-ctrl" onclick="toggleCtrl()">Ctrl</button>
                         <button class="vk-key" onclick="sendDirectKey('\x03')">Ctrl+C</button>
                         <button class="vk-key" onclick="sendDirectKey('\x1a')">Ctrl+Z</button>
@@ -431,7 +489,7 @@
                         <button class="vk-key" onclick="sendDirectKey('\x09')">Tab</button>
                         <button class="vk-key" onclick="sendDirectKey('\x0d')">Enter</button>
                         <button class="vk-key" onclick="forceKillCurrent()"
-                            style="min-width:88px;background:#2b0b0b">Kill 🔪</button>
+                            style="background:#450a0a; color:#fca5a5;">Kill 🔪</button>
                     </div>
 
                 </div>
@@ -443,19 +501,16 @@
     </div>
 
     <script>
-        // ------- Terminal logic: adapted from your existing code (keeps xterm usage) -------
+        // ------- Logic Area -------
         let socket;
         let terminals = {};
         let activeTabId = null;
         let tabCount = 0;
         let isCtrlToggled = false;
-        /* ---------- Keep your original logic but adapt selectors to new DOM structure ---------- */
+
         const BASE_URL = "https://awhirl-digestibly-refugio.ngrok-free.dev";
         let currentToken = localStorage.getItem("magic_token");
 
-        // reuse the terminal / socket logic you already had; this file expects your server (/server.js) to remain as-is.
-
-        // show dashboard if token exists
         if (currentToken) showDashboard();
 
         async function login() {
@@ -477,10 +532,7 @@
 
         function logout() { localStorage.removeItem('magic_token'); location.reload(); }
 
-        /* Small helpers (fetchMedia, recordMedia, castMagic, uploadAudio etc.) are identical to your original file.
-           To keep this example concise the rest of those functions are intentionally minimal here — paste your
-           full implementations from your existing index.html for complete behaviour. */
-
+        // API Helpers
         async function fetchAPI(endpoint, method = 'GET', body = null) {
             const options = { method, headers: { 'Authorization': currentToken, 'ngrok-skip-browser-warning': 'true' } };
             if (body) { options.headers['Content-Type'] = 'application/json'; options.body = JSON.stringify(body); }
@@ -506,38 +558,54 @@
         async function uploadAudio() { const fileInput = document.getElementById('audioUpload'); if (!fileInput.files[0]) return alert('Select audio file'); const formData = new FormData(); formData.append('audioFile', fileInput.files[0]); await fetch(`${BASE_URL}/api/playaudio`, { method: 'POST', headers: { 'Authorization': currentToken, 'ngrok-skip-browser-warning': 'true' }, body: formData }); alert('Music sent!'); }
         async function stopMusic() { await fetchAPI('/api/musicroko', 'POST'); }
 
-        // ------- Terminal logic: adapted from your existing code (keeps xterm usage) -------
-
+        // ------- Terminal WebSockets + FitAddon Logic -------
 
         function initTerminal() {
             socket = io(BASE_URL, { auth: { token: currentToken }, extraHeaders: { 'ngrok-skip-browser-warning': 'true' } });
 
             socket.on('connect', () => {
-                for (let id in terminals) terminals[id].xterm.write('\r\n\x1b[32m[Connected!]\x1b[0m\r\n');
+                // Puraane tabs connect hone par success text
+                for (let id in terminals) terminals[id].xterm.write('\r\n\x1b[32m[Connected to Xubuntu!]\x1b[0m\r\n');
+
+                // ✨ MAGIC: Sirf tabhi pehla naya tab banao jab connection secure ho jaye!
+                if (Object.keys(terminals).length === 0) {
+                    createNewTab();
+                }
             });
 
-            socket.on('terminal-data', ({ tabId, data }) => { if (terminals[tabId]) terminals[tabId].xterm.write(data); });
+            socket.on('terminal-data', ({ tabId, data }) => {
+                if (terminals[tabId]) terminals[tabId].xterm.write(data);
+            });
+
             socket.on('connect_error', () => alert('Terminal Connection Failed!'));
 
-            createNewTab();
+            // Yahan neeche jo direct createNewTab() rakha tha, use hata diya gaya hai!
         }
 
         function createNewTab() {
             tabCount++; const tabId = `s_${tabCount}`;
-            const tabBtn = document.createElement('div'); tabBtn.className = 'tab'; tabBtn.id = `tab-btn-${tabId}`; tabBtn.innerHTML = `Bash ${tabCount} <span style="margin-left:8px;cursor:pointer;color:var(--danger)" onclick="closeTab('${tabId}', event)">×</span>`;
+            const tabBtn = document.createElement('div'); tabBtn.className = 'tab'; tabBtn.id = `tab-btn-${tabId}`;
+            tabBtn.innerHTML = `Bash ${tabCount} <span style="margin-left:8px;cursor:pointer;color:var(--danger)" onclick="closeTab('${tabId}', event)">×</span>`;
             tabBtn.onclick = () => switchTab(tabId);
             document.getElementById('tabBar').appendChild(tabBtn);
 
             const container = document.createElement('div'); container.className = 'xterm-container'; container.id = `container-${tabId}`;
             document.getElementById('terminals-area').appendChild(container);
 
-            const term = new Terminal({ theme: { background: '#000', foreground: '#e6eef8', cursor: '#4f46e5' }, fontSize: 13 });
-            terminals[tabId] = { xterm: term, container, btn: tabBtn };
+            // Initialize Terminal & FitAddon
+            const term = new Terminal({ theme: { background: '#000', foreground: '#e6eef8', cursor: '#4f46e5' }, fontSize: 13, fontFamily: "Menlo, Monaco, 'Courier New', monospace" });
+            const fitAddon = new FitAddon.FitAddon();
+            term.loadAddon(fitAddon);
+
+            terminals[tabId] = { xterm: term, fit: fitAddon, container, btn: tabBtn };
 
             switchTab(tabId);
             term.open(container);
-            term.write('\x1b[33mEstablishing secure link to Xubuntu...\x1b[0m\r\n\
-\x1b[33mKabhi kabhi terminal me -> aisa nishan nhi aata to usko close kro aur new terminal open kro\x1b');
+
+            // Ab ye terminal ko container ke hisab se perfect width dega
+            setTimeout(() => { fitAddon.fit(); }, 50);
+
+            term.write('\x1b[33mEstablishing secure link to Xubuntu...\x1b[0m\r\n');
 
             term.onData((data) => {
                 let payload = data;
@@ -553,14 +621,65 @@
         }
 
         function switchTab(tabId) {
-            if (activeTabId && terminals[activeTabId]) { terminals[activeTabId].btn.classList.remove('active'); terminals[activeTabId].container.classList.remove('active'); }
-            activeTabId = tabId; terminals[tabId].btn.classList.add('active'); terminals[tabId].container.classList.add('active');
+            if (activeTabId && terminals[activeTabId]) {
+                terminals[activeTabId].btn.classList.remove('active');
+                terminals[activeTabId].container.classList.remove('active');
+            }
+            activeTabId = tabId;
+            terminals[tabId].btn.classList.add('active');
+            terminals[tabId].container.classList.add('active');
+
+            // Switch karne par bhi ek baar fit kardo
+            setTimeout(() => { if (terminals[tabId].fit) terminals[tabId].fit.fit(); }, 50);
         }
 
         function closeTab(tabId, event) {
-            event.stopPropagation(); socket.emit('close-session', tabId); if (terminals[tabId]) { terminals[tabId].btn.remove(); terminals[tabId].container.remove(); try { terminals[tabId].xterm.dispose(); } catch (e) { } delete terminals[tabId]; }
+            event.stopPropagation(); socket.emit('close-session', tabId);
+            if (terminals[tabId]) { terminals[tabId].btn.remove(); terminals[tabId].container.remove(); try { terminals[tabId].xterm.dispose(); } catch (e) { } delete terminals[tabId]; }
             if (activeTabId === tabId) { const remaining = Object.keys(terminals); if (remaining.length > 0) switchTab(remaining[0]); else activeTabId = null; }
         }
+
+        // Window resize par saare active terminals auto fit honge!
+        window.addEventListener('resize', () => {
+            if (activeTabId && terminals[activeTabId]) {
+                terminals[activeTabId].fit.fit();
+            }
+        });
+
+        // --- FULLSCREEN MAGIC ---
+        function toggleFullScreen() {
+            const wrapper = document.getElementById('terminalWrapper');
+
+            if (!document.fullscreenElement) {
+                // Agar phone support karta hai toh native Fullscreen api use karo
+                if (wrapper.requestFullscreen) {
+                    wrapper.requestFullscreen().catch(err => console.log(err));
+                } else if (wrapper.webkitRequestFullscreen) { /* Safari */
+                    wrapper.webkitRequestFullscreen();
+                }
+                wrapper.classList.add('fullscreen-active');
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) { /* Safari */
+                    document.webkitExitFullscreen();
+                }
+                wrapper.classList.remove('fullscreen-active');
+            }
+
+            // Layout change hone ke baad fit zaruri hai
+            setTimeout(() => {
+                if (activeTabId && terminals[activeTabId]) terminals[activeTabId].fit.fit();
+            }, 200);
+        }
+
+        // Fullscreen state listener taaki agar user ESC dabaye ya back kare toh class hat jaye
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                document.getElementById('terminalWrapper').classList.remove('fullscreen-active');
+                setTimeout(() => { if (activeTabId && terminals[activeTabId]) terminals[activeTabId].fit.fit(); }, 200);
+            }
+        });
 
         function toggleCtrl() { isCtrlToggled = !isCtrlToggled; document.getElementById('vk-ctrl').classList.toggle('toggled'); }
         function sendDirectKey(k) { if (activeTabId) socket.emit('terminal-input', { tabId: activeTabId, data: k }); }
