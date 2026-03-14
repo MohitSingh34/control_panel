@@ -263,6 +263,30 @@
             align-items: center;
         }
 
+        /* ✨ MAYRA'S INVISIBLE SCROLL MAGIC ✨ */
+        /* Chrome, Safari, WebKit browsers ke liye */
+        *::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Firefox, IE, Edge ke liye */
+        * {
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+
+        .virtual-kb1 {
+            display: flex;
+            gap: 8px;
+            padding: 10px;
+            overflow-x: auto;
+            background: rgba(15, 23, 36, 0.9);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            align-items: center;
+        }
+
         .vk-key {
             flex-shrink: 0;
             padding: 10px 14px;
@@ -361,6 +385,16 @@
             #login-section {
                 margin-top: 18vh
             }
+
+            /* ✨ MAYRA'S LAPTOP FIX: Desktop par physical keyboard hai, toh Virtual VK ko hide kar do! */
+            .virtual-kb1 {
+                display: none !important;
+            }
+
+            /* Laptop par fullscreen me bhi extra padding hata do */
+            .terminal-wrapper.fullscreen-active .term-main-content {
+                padding-right: 0 !important;
+            }
         }
 
         @media (max-width:360px) {
@@ -372,6 +406,9 @@
                 flex-direction: column
             }
         }
+
+        /* ✨ MAYRA'S INVISIBLE SCROLL MAGIC ✨ */
+        /* Chrome, Safari, WebKit browsers ke liye */
     </style>
 </head>
 
@@ -469,6 +506,22 @@
                         <div class="tab-bar panel" id="tabBar" aria-label="tab bar"
                             style="border-radius:0; border-left:none; border-right:none;">
                         </div>
+                        <div class="virtual-kb1" aria-hidden="false">
+                            <div class="vk-label" style="font-size:12px;color:var(--muted);min-width:30px">VK:</div>
+                            <button class="vk-key" onclick="sendDirectKey('\x1b[D')">←</button>
+                            <button class="vk-key" onclick="sendDirectKey('\x1b[B')">↓</button>
+                            <button class="vk-key" onclick="sendDirectKey('\x1b[A')">↑</button>
+                            <button class="vk-key" onclick="sendDirectKey('\x1b[C')">→</button>
+                            <button class="vk-key" onclick="sendDirectKey('\x0d')">Enter</button>
+                            <button class="vk-key" id="vk-ctrl" onclick="toggleCtrl()">Ctrl</button>
+                            <button class="vk-key" onclick="sendDirectKey('\x03')">Ctrl+C</button>
+                            <button class="vk-key" onclick="sendDirectKey('\x1a')">Ctrl+Z</button>
+                            <button class="vk-key" onclick="sendDirectKey('\x1b')">Esc</button>
+                            <button class="vk-key" onclick="sendDirectKey('\x09')">Tab</button>
+
+                            <button class="vk-key" onclick="forceKillCurrent()"
+                                style="background:#450a0a; color:#fca5a5;">Kill 🔪</button>
+                        </div>
 
                         <div id="terminals-area">
                         </div>
@@ -481,13 +534,13 @@
                         <button class="vk-key" onclick="sendDirectKey('\x1b[B')">↓</button>
                         <button class="vk-key" onclick="sendDirectKey('\x1b[A')">↑</button>
                         <button class="vk-key" onclick="sendDirectKey('\x1b[C')">→</button>
+                        <button class="vk-key" onclick="sendDirectKey('\x0d')">Enter</button>
 
                         <button class="vk-key" id="vk-ctrl" onclick="toggleCtrl()">Ctrl</button>
                         <button class="vk-key" onclick="sendDirectKey('\x03')">Ctrl+C</button>
                         <button class="vk-key" onclick="sendDirectKey('\x1a')">Ctrl+Z</button>
                         <button class="vk-key" onclick="sendDirectKey('\x1b')">Esc</button>
                         <button class="vk-key" onclick="sendDirectKey('\x09')">Tab</button>
-                        <button class="vk-key" onclick="sendDirectKey('\x0d')">Enter</button>
                         <button class="vk-key" onclick="forceKillCurrent()"
                             style="background:#450a0a; color:#fca5a5;">Kill 🔪</button>
                     </div>
