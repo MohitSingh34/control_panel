@@ -674,12 +674,33 @@
         }
 
         // Fullscreen state listener taaki agar user ESC dabaye ya back kare toh class hat jaye
+        // Fullscreen state listener taaki agar user ESC dabaye ya back kare toh class hat jaye
         document.addEventListener('fullscreenchange', () => {
+            const wrapper = document.getElementById('terminalWrapper');
             if (!document.fullscreenElement) {
-                document.getElementById('terminalWrapper').classList.remove('fullscreen-active');
+                wrapper.classList.remove('fullscreen-active');
+                wrapper.style.height = ''; // ✨ Keyboard fix reset
                 setTimeout(() => { if (activeTabId && terminals[activeTabId]) terminals[activeTabId].fit.fit(); }, 200);
             }
         });
+
+        // --- ✨ NATIVE KEYBOARD OVERLAP FIX (Visual Viewport API) ---
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener("resize", () => {
+                const wrapper = document.getElementById('terminalWrapper');
+
+                // Sirf tab trigger hoga jab hum fullscreen me honge
+                if (wrapper.classList.contains('fullscreen-active')) {
+                    // Keyboard aane par jitni visible screen bachi hai, wrapper ko exact wahi height de do!
+                    wrapper.style.height = window.visualViewport.height + 'px';
+
+                    // Xterm ko naye size ke hisaab se fit kar do taaki text na kate
+                    setTimeout(() => {
+                        if (activeTabId && terminals[activeTabId]) terminals[activeTabId].fit.fit();
+                    }, 50);
+                }
+            });
+        }
 
         function toggleCtrl() { isCtrlToggled = !isCtrlToggled; document.getElementById('vk-ctrl').classList.toggle('toggled'); }
         function sendDirectKey(k) { if (activeTabId) socket.emit('terminal-input', { tabId: activeTabId, data: k }); }
